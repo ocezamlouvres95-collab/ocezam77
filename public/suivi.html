@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Suivi de commande — O CEZAM 77</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&family=Kaushan+Script&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;background:#F3F5F7;color:#14283A}
+header{background:#14609F;height:76px;display:flex;align-items:center;justify-content:center}header a{font:400 38px 'Kaushan Script',cursive;color:#fff;text-decoration:none;transform:rotate(-3deg)}
+main{max-width:520px;margin:0 auto;padding:18px}
+.box{background:#fff;box-shadow:0 1px 4px #0003;border-radius:3px;padding:16px;margin-top:16px}
+.num{text-align:center}.num .n{font:700 84px/1 'IBM Plex Sans'}.st{font-size:24px;font-weight:700;text-transform:uppercase;margin-top:6px}
+.steps{display:flex;gap:4px;margin:18px 0}.steps div{flex:1;text-align:center;font-size:12px;color:#777}.steps i{display:block;height:8px;background:#ddd;margin-bottom:5px}.steps .d i{background:#15803d}.steps .c i{background:#1F6FB5}.steps .c{color:#111;font-weight:700}
+.row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #eee}.row small{display:block;color:#666}
+.badge{border-radius:99px;padding:3px 12px;font-weight:700;font-size:13px}.ok{background:#dcfce7;color:#14532d}.no{background:#fff1d6;color:#7a4300}
+.btn{display:block;width:100%;background:#14609F;color:#fff;border:0;padding:14px;font:700 15px 'IBM Plex Sans';text-transform:uppercase;text-align:center;text-decoration:none;margin-top:12px;cursor:pointer}.err{color:#b91c1c}
+</style></head><body><header><a href="/">O'Cezam 77</a></header><main id="m"><p>Chargement…</p></main>
+<script>
+const $=i=>document.getElementById(i),eur=n=>(n/100).toFixed(2).replace('.',',')+' €';
+function el(t,p,x){const e=document.createElement(t);if(p)Object.assign(e,p);if(x!==undefined)e.textContent=x;return e}
+const qs=new URLSearchParams(location.search);let tk=qs.get('t');try{if(tk)localStorage.setItem('oc_last',JSON.stringify(tk));else tk=JSON.parse(localStorage.getItem('oc_last')||'""')}catch{}
+const LBL={ATTENTE_PAIEMENT:'En attente de paiement',NOUVELLE:'Commande reçue',EN_PREPARATION:'En préparation',PRETE:'Prête !',LIVREE:'Livrée / remise',ANNULEE:'Annulée'};
+let prev=null,timer;
+function chime(){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.connect(c.destination);o.frequency.value=988;o.start();setTimeout(()=>{o.stop();c.close()},350);navigator.vibrate&&navigator.vibrate([200,100,200])}catch{}}
+async function load(){const m=$('m');
+ if(!tk){m.textContent='';m.append(el('p',0,'Aucune commande à suivre. '),el('a',{href:'/'},'Retour à la carte'));return}
+ let j;try{j=await (await fetch('/api/track?k='+encodeURIComponent(tk))).json()}catch{return}
+ m.textContent='';if(!j.ok){m.appendChild(el('p',{className:'err'},j.error||'Erreur'));clearInterval(timer);return}
+ if(prev&&prev!==j.status&&j.status==='PRETE')chime();prev=j.status;
+ const n=el('div',{className:'box num'});if(j.num)n.append(el('small',0,'Votre numéro de commande'),el('div',{className:'n'},String(j.num)));n.appendChild(el('div',{className:'st'},LBL[j.status]||j.status));m.appendChild(n);
+ const order=['NOUVELLE','EN_PREPARATION','PRETE','LIVREE'],idx=order.indexOf(j.status);
+ if(idx>=0){const s=el('div',{className:'steps'});['Reçue','En préparation','Prête','Livrée'].forEach((t,k)=>{const d=el('div',{className:k<idx?'d':k===idx?'c':''});d.append(el('i'),t);s.appendChild(d)});m.appendChild(s)}
+ if(j.status==='ATTENTE_PAIEMENT'){const b=el('div',{className:'box'});b.appendChild(el('p',0,qs.get('cancel')?"Le paiement a été annulé. Votre commande n'est pas encore transmise au restaurant.":'Paiement en cours de validation…'));
+  const a=el('button',{className:'btn',type:'button'},'Payer ma commande ('+eur(j.total)+')');a.onclick=async()=>{a.disabled=true;const r=await (await fetch('/api/pay',{method:'POST',body:JSON.stringify({k:tk})})).json();if(r.ok)location.href=r.url;else{a.disabled=false;alert(r.error||'Erreur')}};b.appendChild(a);m.appendChild(b)}
+ if(j.status==='PRETE')m.appendChild(el('div',{className:'box',style:'text-align:center;font-weight:700'},j.mode==='LIVRAISON'?'Votre commande part en livraison.':'Vous pouvez venir la récupérer.'));
+ const b=el('div',{className:'box'}),h=el('div',{className:'row'});
+ h.append(el('b',0,(j.mode==='LIVRAISON'?'Livraison':'À emporter')+' · '+j.heure),el('span',{className:'badge '+(j.paid?'ok':'no')},j.paid?'Payée':(j.pay==='CARTE'?'Non payée':'À régler '+(j.mode==='LIVRAISON'?'à la livraison':'au retrait'))));b.appendChild(h);
+ j.lines.forEach(l=>{const r=el('div',{className:'row'}),t=el('div');t.appendChild(el('span',0,l.qty+' × '+l.label));if(l.detail)t.appendChild(el('small',0,l.detail));r.append(t,el('span',0,eur(l.total)));b.appendChild(r)});
+ const add=(a,v)=>{const r=el('div',{className:'row'});r.append(el('span',0,a),el('span',0,v));b.appendChild(r)};
+ if(j.discount)add('Promotion'+(j.promo?' : '+j.promo:''),'− '+eur(j.discount));if(j.fee)add('Livraison',eur(j.fee));add('Total TTC',eur(j.total));m.appendChild(b);
+ if(j.shop.phone)m.appendChild(el('a',{className:'btn',href:'tel:'+j.shop.phone.replace(/[^0-9+]/g,'')},'Appeler le restaurant'));
+ m.appendChild(el('a',{href:'/',style:'display:block;text-align:center;margin:18px;color:#111'},'Retour à la carte'));
+ if(['LIVREE','ANNULEE'].includes(j.status))clearInterval(timer)}
+load();timer=setInterval(load,6000);
+</script></body></html>

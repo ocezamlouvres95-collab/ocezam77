@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Commandes — O CEZAM 77</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@700&family=Barlow+Condensed:ital,wght@1,800&family=Kaushan+Script&display=swap" rel="stylesheet">
+<style>
+:root{--tb:#1F6FB5;--tbd:#0F4C81;--hd:#14609F;--lg:#F3F5F7;--ink:#14283A}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{background:var(--lg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;display:flex;flex-direction:column}
+header{padding:10px 28px;background:var(--hd);color:#fff;display:flex;justify-content:space-between;align-items:center}header span.l{font:400 46px 'Kaushan Script',cursive}header span.c{font:700 30px 'IBM Plex Sans';letter-spacing:.04em}header button{background:#ffffff33;color:#fff;border:0;border-radius:6px;padding:8px 14px;font:700 16px 'IBM Plex Sans';cursor:pointer}
+main{flex:1;display:grid;grid-template-columns:1fr 1.2fr;min-height:0}section{padding:22px 28px;overflow:hidden}
+section.a{background:#fff}section.b{background:var(--tb);color:#fff}
+h2{margin:0 0 16px;font-size:38px;text-transform:uppercase;color:var(--tb)}section.b h2{color:#fff}
+.nums{display:flex;flex-wrap:wrap;gap:14px}.nums span{font-size:100px;font-weight:700;line-height:1;background:var(--lg);color:var(--ink);padding:6px 26px;min-width:150px;text-align:center;border-radius:10px}
+section.b .nums span{background:#fff;color:var(--tbd);font-size:130px}
+.new{animation:b 1s 4}@keyframes b{50%{background:var(--tbd)!important;color:#fff!important}}.empty{font-size:28px;opacity:.55}
+#promo{display:none;padding:14px 28px;background:var(--lg);border-top:4px solid var(--tb)}
+.pr{border-radius:12px;padding:14px 26px;background:var(--bg);color:var(--fg);animation:fi .6s both}.pr b{display:block;font:italic 800 clamp(30px,4.2vw,56px)/1.05 'Barlow Condensed',sans-serif;text-transform:uppercase}.pr span{font-size:clamp(16px,2vw,26px);font-weight:600}
+.pr.flash{animation:fi .6s both,fl 1.2s ease-in-out infinite}@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1}}@keyframes fl{50%{transform:scale(1.02)}}
+@media(max-width:800px){main{grid-template-columns:1fr}.nums span{font-size:64px!important}}
+@media(prefers-reduced-motion:reduce){.pr,.new{animation:none!important}}
+</style></head><body>
+<header><span class="l">O'Cezam 77</span><span class="c" id="clock"></span><button id="fs" type="button">Plein écran</button></header>
+<main><section class="a"><h2>En préparation</h2><div class="nums" id="prep"></div></section><section class="b"><h2>Prêtes — à récupérer</h2><div class="nums" id="ready"></div></section></main>
+<div id="promo"></div>
+<script>
+let old=new Set();
+const PAL={jaune:['#FFE600','#111'],orange:['#FF7A00','#111'],rouge:['#E8112D','#fff'],rose:['#FF2E93','#fff'],vert:['#00D26A','#06260F'],bleu:['#1E6BFF','#fff'],violet:['#7B2FFF','#fff']};
+function draw(id,a,txt,mark){const d=document.getElementById(id);d.textContent='';if(!a.length){const e=document.createElement('div');e.className='empty';e.textContent=txt;d.appendChild(e)}a.forEach(n=>{const s=document.createElement('span');s.textContent=n;if(mark&&!old.has(n))s.className='new';d.appendChild(s)})}
+async function load(){try{const j=await (await fetch('/api/board',{cache:'no-store'})).json();if(!j.ok)return;draw('prep',j.prep,'Aucune commande en cours');draw('ready',j.ready,'—',true);old=new Set(j.ready)}catch{}}
+/* offres du moment : une par une, toutes les 7 s */
+let P=[],pi=0;
+async function loadPromos(){try{const j=await (await fetch('/api/menu',{cache:'no-store'})).json();P=(j.promos||[]);showPromo(true)}catch{}}
+function showPromo(keep){const box=document.getElementById('promo');if(!P.length){box.style.display='none';return}box.style.display='block';if(!keep)pi=(pi+1)%P.length;if(pi>=P.length)pi=0;
+ const p=P[pi],c=PAL[p.color]||PAL.jaune,d=document.createElement('div');d.className='pr'+(p.flash?' flash':'');d.style.cssText='--bg:'+c[0]+';--fg:'+c[1];
+ const b=document.createElement('b');b.textContent=(p.emoji?p.emoji+' ':'')+p.n;d.appendChild(b);if(p.d){const s=document.createElement('span');s.textContent=p.d;d.appendChild(s)}box.textContent='';box.appendChild(d)}
+function tick(){const e=document.getElementById('clock');e.textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+document.getElementById('fs').onclick=()=>document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+load();loadPromos();tick();setInterval(load,5000);setInterval(loadPromos,60000);setInterval(()=>showPromo(false),7000);setInterval(tick,15000);
+</script></body></html>

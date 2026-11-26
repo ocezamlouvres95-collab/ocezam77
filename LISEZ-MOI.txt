@@ -1,0 +1,35 @@
+Ô CEZAM 77 — SITE DE COMMANDE (Cloudflare Pages + base D1) — https://77.ocezam.com
+
+Projet neuf, base de données neuve, séparé du site Ô Cezam 95 (aucune donnée client ni commande reprise).
+Catalogue : 14 catégories, 128 articles (fichiers O_CEZAM_77_catalogue_*), chargés automatiquement au premier affichage.
+Restaurant : 5 Avenue du Général Leclerc, 77390 Chaumes-en-Brie — 07 82 75 80 44 / 09 73 21 78 67.
+
+A. MISE EN LIGNE (une seule fois, dans le dossier ocezam77)
+ 1. npx wrangler login
+ 2. npx wrangler d1 create ocezam77
+    -> copier le database_id affiché dans wrangler.toml (remplace REMPLACER-PAR-L-ID-D1)
+ 3. npx wrangler pages project create ocezam77 --production-branch main
+ 4. npx wrangler pages secret put ADMIN_TOKEN --project-name ocezam77   (mot de passe de l'admin, code long)
+ 5. npx wrangler pages deploy public --project-name ocezam77
+ 6. Tester https://ocezam77.pages.dev puis /admin.html
+    Les tables de la base se créent toutes seules (aucun fichier SQL à exécuter).
+
+B. DOMAINE 77.ocezam.com
+ - Cloudflare > Workers & Pages > ocezam77 > Custom domains > ajouter 77.ocezam.com
+ - Si ocezam.com est géré par Cloudflare : le CNAME est créé tout seul.
+ - Sinon, chez le gestionnaire DNS : CNAME  77  ->  ocezam77.pages.dev
+ - Ne pas toucher aux autres enregistrements de ocezam.com (site 95 et e-mails inchangés).
+
+C. À RÉGLER DANS L'ADMIN (Réglages) AVANT D'OUVRIR AUX CLIENTS — données non fournies, rien n'a été inventé
+ - Horaires : automatisme coupé par défaut (le site accepte les commandes tant que « Commandes » est ouvert).
+   Renseigner les horaires puis cocher « Horaires automatiques ».
+ - Livraison : 13 communes chargées, modifiables (une par ligne « Commune;Code postal;Minimum € »).
+   Minimums connus : Ozouer-le-Voulgis 25 €, Yèbles 30 €. Autres communes : aucun minimum et livraison gratuite
+   jusqu'à confirmation des frais, minimums et délais.
+   Exclues car à confirmer : Bernay-Vilbert (code postal incohérent), une ligne sans nom, Mormant.
+ - Carte : tous les articles sont actifs aux prix de la carte consultée. Tailles des pizzas (Senior/Méga), options des tacos,
+   menus (boissons, frites, sauces) et suppléments sont à créer dans Carte > Modifier un article.
+   Allergènes et photos à fournir.
+ - Pages légales : compléter les passages surlignés en jaune dans public/cgv.html et public/privacy-policy.html (raison sociale, SIRET…).
+ - Paiement par carte (facultatif), e-mails de confirmation, imprimante Zebra : mêmes réglages que le site 95,
+   avec les secrets du projet ocezam77.
