@@ -681,11 +681,16 @@ function cItems(m){m.append(h('div',{className:'bar'},h('button',{className:'btn
 function editItem(src){const it=src?JSON.parse(JSON.stringify(src)):{id:uid('a'),n:'',c:CF,p:0,d:'',inc:[],on:true,img:0,groups:[],s:CAT.items.length+1};
  dlg(src?'Modifier l\'article':'Nouvel article',(d,close)=>{
   const f=(l,k,t)=>[h('label',{className:'f'},l),h('input',{type:t||'text',value:it[k]??'',step:t==='number'?'0.1':undefined,style:{width:'100%'},oninput:e=>it[k]=t==='number'?parseFloat(e.target.value)||0:e.target.value})];
+  const tg=()=>(it.groups||[]).find(g=>g.id==='taille'&&Array.isArray(g.ch)),mgc=()=>{const g=tg();return g&&g.ch.find(c=>/m[ée]ga/i.test(c.n))},r2=x=>Math.round(x*100)/100;
+  let pm=mgc()?r2((it.p||0)+(mgc().p||0)):null;
+  const priceFields=()=>{const out=[h('label',{className:'f'},mgc()?'Prix Senior TTC (€)':'Prix TTC (€)'),h('input',{type:'number',step:'0.1',value:it.p??'',style:{width:'100%'},oninput:e=>{it.p=parseFloat(e.target.value)||0;const c=mgc();if(c&&pm!=null)c.p=r2(pm-it.p)}})];
+   if(mgc())out.push(h('label',{className:'f'},'Prix Méga TTC (€) – prix final de la pizza Méga'),h('input',{type:'number',step:'0.1',value:pm,style:{width:'100%'},oninput:e=>{pm=parseFloat(e.target.value)||0;mgc().p=r2(pm-(it.p||0))}}));
+   return out};
   const pv=h('div',{className:'thumb',style:{width:'110px',height:'110px'}}),show=()=>{pv.style.backgroundImage=it.img?`url(/api/img/${it.id}?v=${it.img})`:'';pv.textContent=it.img?'':'Pas de photo'};show();
   const fi=h('input',{type:'file',accept:'image/*',onchange:async()=>{const file=fi.files[0];if(!file)return;try{const b=await shrink(file),r=await fetch('/api/admin/image?id='+encodeURIComponent(it.id),{method:'POST',headers:{'x-admin-token':TK,'Content-Type':'image/jpeg'},body:b}),j=await r.json();if(!j.ok)throw new Error(j.error);it.img=j.v;show();toast('Photo envoyée')}catch(e){toast(e.message||'Photo impossible',true)}}});
   const rm=h('button',{className:'btn r',type:'button',onclick:async()=>{await fetch('/api/admin/image?id='+encodeURIComponent(it.id),{method:'DELETE',headers:{'x-admin-token':TK}});it.img=0;show()}},'Retirer la photo');
   d.append(h('div',{style:{display:'flex',gap:'12px',alignItems:'center'}},pv,h('div',0,h('div',0,'Photo (JPEG/PNG/WebP, réduite automatiquement)'),fi,h('div',{style:{marginTop:'6px'}},rm))),
-   ...f('Nom','n'),...f('Prix TTC (€)','p','number'),h('label',{className:'f'},'Catégorie'),h('select',{style:{width:'100%'},onchange:e=>it.c=e.target.value},...CAT.cats.map(c=>h('option',{value:c.id,selected:c.id===it.c},c.n))),
+   ...f('Nom','n'),...priceFields(),h('label',{className:'f'},'Catégorie'),h('select',{style:{width:'100%'},onchange:e=>it.c=e.target.value},...CAT.cats.map(c=>h('option',{value:c.id,selected:c.id===it.c},c.n))),
    ...f('Description (facultatif)','d'),h('label',{className:'f'},'Compris dans le menu (séparé par des virgules)'),h('input',{style:{width:'100%'},value:(it.inc||[]).join(', '),oninput:e=>it.inc=e.target.value.split(',').map(x=>x.trim()).filter(Boolean)}),
    h('label',{className:'f'},h('input',{type:'checkbox',checked:it.on!==false,onchange:e=>it.on=e.target.checked}),' En vente'),h('h4',{style:{marginBottom:0}},'Options proposées au client'));
   const gb=h('div');d.append(gb);
