@@ -84,7 +84,7 @@ const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const chOf=g=>g.list?(M.lists[g.list]?.ch||[]):(g.ch||[]),itemOf=id=>M.items.find(i=>i.id===id);
 const unit=(it,sel)=>{let u=cents(it.p);for(const g of it.groups||[])for(const s of sel[g.id]||[]){const c=chOf(g).find(x=>x.n===s);if(c)u+=cents(c.p)}return u};
 const est=()=>cart.reduce((s,x)=>{const it=itemOf(x.id);return s+(it?unit(it,x.sel)*x.qty:0)},0);
-const img=i=>i.img?'/api/img/'+i.id+'?v='+i.img:null;
+const img=i=>i.img?'/api/img/'+i.id+'?v='+i.img:(i.imgUrl||null);
 const pic=(i,c)=>{const s=img(i);if(!s){const d=el('div',{className:'ph'});return d}return el('img',{src:s,alt:'',loading:'lazy'})};
 
 function applyCustomerToCustStorage(c){

@@ -20,7 +20,7 @@ export function sanitizeCatalog(c) {
       if (g.empty) o.empty = clean(g.empty, 40);
       return o;
     }).filter(g => g.t);
-    return { id: iid, n: clean(i.n, 80), c: i.c, p: Math.max(0, Math.min(999, num(i.p))), d: clean(i.d, 300), inc: (Array.isArray(i.inc) ? i.inc : []).slice(0, 12).map(x => clean(x, 80)).filter(Boolean), on: i.on !== false, img: parseInt(i.img) || 0, groups, s: parseInt(i.s) || k };
+    return { id: iid, n: clean(i.n, 80), c: i.c, p: Math.max(0, Math.min(999, num(i.p))), d: clean(i.d, 300), inc: (Array.isArray(i.inc) ? i.inc : []).slice(0, 12).map(x => clean(x, 80)).filter(Boolean), on: i.on !== false, img: parseInt(i.img) || 0, imgUrl: /^(https:\/\/app\.eatandcollect\.fr\/[\w\-./%]+|\/img\/[\w\-]+\.png)$/.test(i.imgUrl || '') ? i.imgUrl : '', groups, s: parseInt(i.s) || k };
   }).filter(Boolean);
   return { v: 1, cats, lists, items };
 }
