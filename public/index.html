@@ -214,7 +214,7 @@ function dealsBar(){const L=M.promos||[];if(!L.length)return null;const w=el('di
  L.forEach(p=>{const b=el('button',{type:'button',className:'deal'+(p.flash?' flash':'')});b.style.cssText=dealStyle(p);b.appendChild(el('b',0,(p.emoji?p.emoji+' ':'')+p.n));if(p.d)b.appendChild(el('span',0,p.d));
   b.onclick=()=>{const cid=p.scope==='CAT'?p.t[0]:p.scope==='ITEM'?(itemOf(p.t[0])||{}).c:'';location.hash='#/menu'+(cid?'/'+cid:'')};w.appendChild(b)});return w}
 function itemBtn(i){const b2=el('button',{className:'it',type:'button',disabled:!M.shop.open}),d=el('div'),pr=el('div',{className:'p'}),dl=dealFor(i);
- if(dl&&dl.off)pr.append(el('span',{className:'old'},eur(cents(i.p))),eur(cents(i.p)-dl.off));else pr.textContent=eur(cents(i.p));
+ if(dl&&dl.off)pr.append(el('span',{className:'old'},eur(cents(i.p))),eur(cents(i.p)-dl.off));else{const tg=(i.groups||[]).find(g=>g.id==='taille'),mg=tg&&chOf(tg).find(c=>/m[ée]ga/i.test(c.n));pr.textContent=mg&&mg.p>0?'Senior '+eur(cents(i.p))+' · Méga '+eur(cents(i.p+mg.p)):eur(cents(i.p))}
  d.append(el('b',0,i.n),pr);if(i.d)d.appendChild(el('div',{className:'d'},i.d));b2.append(d,pic(i));
  if(dl){b2.className='it hot';b2.style.cssText=dealStyle(dl.p);b2.appendChild(el('span',{className:'tg'+(dl.p.flash?' flash':'')},dealTag(dl.p,dl.off)))}
  b2.onclick=()=>opt(i);return b2}
